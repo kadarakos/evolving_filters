@@ -73,3 +73,13 @@ def ox1(p1, p2):
     c2[j:] = p1[:GENOME_SIZE-j]
     c2[0:i] = p1[GENOME_SIZE-j:i]
     return c1, c2
+
+def evaluate_population:
+    pass
+
+def new_population(fit_vals, population):
+    couples = generate_couples(fitness)
+    children = []
+    for p1, p2 in couples:
+        children += ox1(population[p1],
+                        population[p2])
