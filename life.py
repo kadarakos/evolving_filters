@@ -60,7 +60,7 @@ def ox1(p1, p2):
     From http://ictactjournals.in/paper/IJSC_V6_I1_paper_4_pp_1083_1092.pdf
     '''
     i, j = 0, 0
-    while i == j:
+    while abs(i - j) < POPULATION_SIZE/4:
         i, j = np.random.randint(1, GENOME_SIZE, 2)
     if i > j:
          i, j = j, i
@@ -74,12 +74,52 @@ def ox1(p1, p2):
     c2[0:i] = p1[GENOME_SIZE-j:i]
     return c1, c2
 
-def evaluate_population:
-    pass
 
-def new_population(fit_vals, population):
-    couples = generate_couples(fitness)
-    children = []
-    for p1, p2 in couples:
-        children += ox1(population[p1],
-                        population[p2])
+def evaluate_population():
+    '''Pick a sample from the population and query the user for evaluation.'''
+    not_visited = np.where(visited == 0)[0]
+    print len(not_visited)
+    if len(not_visited) == 0:
+        print 'Done'
+        return
+    selection = np.random.choice(not_visited,
+                                 min(len(not_visited), 3),
+                                 replace=False)
+    original_image = skimage.img_as_float(skimage.io.imread("plum2.jpg"))
+    for i in selection:
+        individual = population[i]
+        img = map_funcs(original_image, individual)
+        plt.imshow(img)
+        plt.axis('off')
+
+        plt.show()
+        fit = raw_input("How much do you like the image from 1 to 5")
+        print i
+        fitness[i] = int(fit)
+        visited[i] = 1
+        display.clear_output(wait=True)
+        display.display(plt.gcf())
+
+def selection():
+    '''Replace 2 worst individuals with kids from the 2 best.'''
+    evaluated = np.where(visited)[0]
+    l = np.argsort(fitness[evaluated])[::-1]
+    p1 = population[evaluated[l[0]]]
+    p2 = population[evaluated[l[1]]]
+    c1, c2 = ox1(p1, p2)
+    population[l[-1]] = c1
+    population[l[-2]] = c2
+    fitness[l[-1]] = 0
+    fitness[l[-2]] = 0
+    visited[l[-1]] = 0
+    visited[l[-2]] = 0
+
+if __name__ == '__main__';
+    population = first_inhabitants()
+    visited = np.zeros(POPULATION_SIZE)
+    fitness = np.zeros(POPULATION_SIZE)
+    for i in range(10):
+        evaluate_population()
+        selection()
+        print fitness
+        print visited
