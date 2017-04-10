@@ -2,11 +2,21 @@ from skimage import filters
 import numpy as np
 import skimage
 from skimage.exposure import equalize_hist
+from PIL import Image, ImageFilter
 
 
 def identity(image):
     '''Do nothing.'''
     return image
+
+
+def individual_to_string(ind):
+    '''Print the names of the list of functions making up the individual.'''
+    for i in ind:
+        try:
+            print i.func_name
+        except:
+            print (i.func.func_name, i.keywords)
 
 def split_image_into_channels(image):
     '''Return red, green and blue channels given image.'''
@@ -18,6 +28,14 @@ def split_image_into_channels(image):
 def merge_channels(red_channel, green_channel, blue_channel):
     '''Stack red, green and blue channels together.'''
     return np.stack([red_channel, green_channel, blue_channel], axis=2)
+
+def PIL_to_array(im):
+    '''Convert PIL image to float numpy array.'''
+    (width, height) = im.size
+    img = list(im.getdata())
+    img = np.array(img, dtype='uint8')
+    img = img.reshape((height, width, 3))
+    return skimage.img_as_float(img)
 
 def sharpen(image, a, b, sigma):
     '''Apply gaussian sharpening or blurring to image.'''
@@ -91,6 +109,41 @@ def binarize_b(image):
     b_b = np.where(b > np.mean(b),1.0,0.0)
     return merge_channels(r, g, b_b)
 
+
+def filter_min(image, size):
+    '''Min filter using PIL.'''
+    pil_img = Image.fromarray(skimage.img_as_ubyte(image))
+    fil = ImageFilter.MinFilter(size)
+    im = pil_img.filter(fil)
+    return PIL_to_array(im)
+
+
+def filter_max(image, size):
+    '''Max filter using PIL.'''
+    pil_img = Image.fromarray(skimage.img_as_ubyte(image))
+    fil = ImageFilter.MaxFilter(size)
+    im = pil_img.filter(fil)
+    return PIL_to_array(im)
+
+
+def filter_mode(image, size):
+    '''Mode filter using PIL.'''
+    pil_img = Image.fromarray(skimage.img_as_ubyte(image))
+    fil = ImageFilter.ModeFilter(size)
+    im = pil_img.filter(fil)
+    return PIL_to_array(im)
+
+
+def filter_median(image, size):
+    '''Median filter using PIL.'''
+    pil_img = Image.fromarray(skimage.img_as_ubyte(image))
+    fil = ImageFilter.MedianFilter(size)
+    im = pil_img.filter(fil)
+    return PIL_to_array(im)
+
+
+
 gene_pool = [sharpen, adjust_r, adjust_b, adjust_r,
         identity, equalize_r, equalize_g, equalize_b,
-        binarize_r, binarize_g, binarize_b]
+        binarize_r, binarize_g, binarize_b, filter_max,
+        filter_min, filter_mode, filter_median]

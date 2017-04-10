@@ -3,13 +3,21 @@ from itertools import combinations
 from genes import gene_pool
 from random import choice, shuffle
 from functools import partial
+from genes import PIL_to_array
 
 GENOME_SIZE = 15
 POPULATION_SIZE = 20
 N_TRIALS = 5
 
+
 def map_funcs(obj, func_list):
     return [func(obj) for func in func_list][0]
+
+
+def image_from_url(url):
+    byte = cStringIO.StringIO(urllib.urlopen(url).read())
+    img = Image.open(byte)
+    return PIL_to_array(img)
 
 
 def sample_lucky(fit_vals):
@@ -42,6 +50,9 @@ def first_inhabitants():
                 size = np.random.randint(1, 20)
                 gene = partial(op, values=np.random.uniform(low, high,
                                                             size=size))
+            elif op.func_name.startswith('filter'):
+                size = choice(range(3, 20, 2))
+                gene = partial(op, size=size)
             elif op.func_name == 'sharpen':
                 a, b = np.random.random(2)
                 sigma = np.random.uniform(0, 3.0)
@@ -114,7 +125,7 @@ def selection():
     visited[l[-1]] = 0
     visited[l[-2]] = 0
 
-if __name__ == '__main__';
+if __name__ == '__main__':
     population = first_inhabitants()
     visited = np.zeros(POPULATION_SIZE)
     fitness = np.zeros(POPULATION_SIZE)
